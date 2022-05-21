@@ -1,23 +1,43 @@
+import argparse
 import datetime
+import collections
+import pandas
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 FOUNDATION_YEAR = 1920
 
 if __name__ in "__main__":
-	env = Environment(
-		loader=FileSystemLoader('.'),
-		autoescape=select_autoescape(['html'])
-	)
-	template = env.get_template('template.html')
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-p",
+        "--path",
+        help="increase output verbosity")
+    args = parser.parse_args()
+    if args.path:
+        file_path = args.path
+    else:
+        file_path = 'wine.xlsx'
+    products = pandas.read_excel(
+        file_path,
+        sheet_name='Лист1',
+        na_values=['N/A', 'NA'], 
+        keep_default_na=False).to_dict(orient='records')
+    sorted_products = collections.defaultdict(list)
+    for product in products:
+        sorted_products[product['Категория']].append(product)
+    env = Environment(
+        loader=FileSystemLoader('.'),
+        autoescape=select_autoescape(['html'])
+    )
+    template = env.get_template('template.html')
+    rendered_page = template.render(
+        age=datetime.datetime.now().year - FOUNDATION_YEAR,
+        products=sorted_products
+    )
+    template = env.get_template('template.html')
 
-	rendered_page = template.render(
-		working_years=datetime.datetime.now().year - FOUNDATION_YEAR
-	)
-	template = env.get_template('template.html')
-
-	with open('index.html', 'w', encoding="utf8") as file:
-		file.write(rendered_page)
-	
-	server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
-	server.serve_forever()
+    with open('index.html', 'w', encoding="utf8") as file:
+        file.write(rendered_page)
+    server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
+    server.serve_forever()
