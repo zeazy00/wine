@@ -1,8 +1,9 @@
 import argparse
 import datetime
 import collections
-import pandas
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+import pandas
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 FOUNDATION_YEAR = 1920
@@ -12,12 +13,8 @@ if __name__ in "__main__":
     parser.add_argument(
         "-p",
         "--path",
-        help="increase output verbosity")
-    args = parser.parse_args()
-    if args.path:
-        file_path = args.path
-    else:
-        file_path = 'wine.xlsx'
+        help="Specifying the path for the product file")
+    args = parser.parse_args(default="wine.xlsx")
     products = pandas.read_excel(
         file_path,
         sheet_name='Лист1',
