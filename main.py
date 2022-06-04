@@ -15,6 +15,7 @@ if __name__ in "__main__":
         "--path",
         help="Specifying the path for the product file")
     args = parser.parse_args(default="wine.xlsx")
+
     products = pandas.read_excel(
         file_path,
         sheet_name='Лист1',
@@ -23,10 +24,12 @@ if __name__ in "__main__":
     sorted_products = collections.defaultdict(list)
     for product in products:
         sorted_products[product['Категория']].append(product)
+
     env = Environment(
         loader=FileSystemLoader('.'),
         autoescape=select_autoescape(['html'])
     )
+    
     template = env.get_template('template.html')
     rendered_page = template.render(
         age=datetime.datetime.now().year - FOUNDATION_YEAR,
